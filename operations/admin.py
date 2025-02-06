@@ -6,7 +6,7 @@ from .models import Account, Category, Operation
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'balance')
 
 
 @admin.register(Category)
@@ -16,4 +16,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Operation)
 class OperationAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('id', 'type', 'amount', 'account', 'category', 'date')
+    list_display_links = ('id', 'type')
+    list_filter = ('type', 'account', 'category')
+
