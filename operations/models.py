@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from . import messages
 
 
 # Create your models here.
@@ -11,7 +12,7 @@ class Type(models.TextChoices):
 
 
 class Account(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
@@ -19,7 +20,7 @@ class Account(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     type = models.CharField(max_length=7, choices=Type.choices)
     is_default = models.BooleanField(default=False)
 
@@ -40,7 +41,7 @@ class Operation(models.Model):
 
     def clean(self):
         if self.category.type != self.type:
-            raise ValidationError(f"Категория {self.category} предназначена для другого типа операций")
+            raise ValidationError(messages.WRONG_CATEGORY.format(category=self.category))
 
     def update_balance(self):
         old_operation = Operation.objects.get(pk=self.pk)
