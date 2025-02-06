@@ -5,13 +5,13 @@ from .models import Account, Category, Operation
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['name', 'balance']
+        fields = '__all__'
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['name', 'type']
+        fields = '__all__'
 
 
 class OperationSerializer(serializers.ModelSerializer):
@@ -20,5 +20,4 @@ class OperationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Operation
-        fields = ['type', 'amount', 'account', 'category', 'description', 'date']
-        # fields = '__all__'
+        fields = '__all__'
