@@ -43,23 +43,19 @@ class Operation(models.Model):
             old_operation = Operation.objects.get(pk=self.pk)
             old_amount = old_operation.amount
 
-            if old_operation.type == 'expense':
-                old_operation.account.balance += old_amount
-                print(f"added {old_amount} to {old_operation.account}")
-            else:
-                old_operation.account.balance -= old_amount
-                print(f"taken {old_amount} from {old_operation.account}")
-            print(old_operation.account.balance)
+            if old_operation.type == Type.INCOME:
+                old_amount *= -1
+
+            old_operation.account.balance += old_amount
             old_operation.account.save()
 
         with transaction.atomic():
             super().save(*args, **kwargs)
             self.account.refresh_from_db()
-            if self.type == 'expense':
-                self.account.balance -= self.amount
-                print(f"taken {self.amount} from {self.account}")
-            else:
-                self.account.balance += self.amount
-                print(f"added {self.amount} to {self.account}")
-            print(self.account.balance)
+            amount = self.amount
+
+            if self.type == Type.EXPENSE:
+                amount *= -1
+
+            self.account.balance += amount
             self.account.save()
