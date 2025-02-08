@@ -1,3 +1,4 @@
+import datetime
 from http.client import responses
 
 from django.test import TestCase
@@ -86,3 +87,67 @@ class CategoriesTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Category.objects.count(), 0)
+
+
+class OperationsTest(TestCase):
+    prefix = "/api/operations/"
+
+    def setUp(self):
+        self.account = Account.objects.create(
+            name="Test Account",
+            balance=1000
+        )
+        self.category = Category.objects.create(
+            name="Test Category",
+            type=Type.EXPENSE,
+            is_default=False
+        )
+        self.operation = Operation.objects.create(
+            type=Type.EXPENSE,
+            amount=100,
+            account=self.account,
+            category=self.category,
+            description="Test Operation",
+            date=datetime.datetime.now()
+        )
+        self.client = APIClient()
+
+    def test_get_operations(self):
+        response = self.client.get(self.prefix)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_operation(self):
+        data = {
+            "account": self.account.id,
+            "amount": 300,
+            "type": Type.EXPENSE,
+            "category": self.category.id,
+            "description": "New Operation"
+        }
+        response = self.client.post(self.prefix, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Operation.objects.count(), 2)
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.balance, 600)
+
+    def test_update_operation(self):
+        data = {
+            "account": self.account.id,
+            "amount": 200,
+            "type": Type.EXPENSE,
+            "category": self.category.id,
+            "description": "Updated Operation"
+        }
+        response = self.client.put("{}{}/".format(self.prefix, self.operation.id), data)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.account.refresh_from_db()
+        self.assertEqual(self.account.balance, 800)
+
+    def test_delete_operation(self):
+        response = self.client.delete("{}{}/".format(self.prefix, self.operation.id))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Operation.objects.count(), 0)

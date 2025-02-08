@@ -15,9 +15,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class OperationSerializer(serializers.ModelSerializer):
-    account = AccountSerializer()
-    category = CategorySerializer()
-
     class Meta:
         model = Operation
         fields = '__all__'
+
