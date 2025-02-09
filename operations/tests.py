@@ -117,7 +117,7 @@ class OperationsTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_create_operation(self):
+    def test_create_operation_expense(self):
         data = {
             "account": self.account.id,
             "amount": 300,
@@ -131,6 +131,19 @@ class OperationsTest(TestCase):
         self.assertEqual(Operation.objects.count(), 2)
         self.account.refresh_from_db()
         self.assertEqual(self.account.balance, 600)
+
+    def test_create_operation_income(self):
+        data = {
+            "account": self.account.id,
+            "amount": 300,
+            "type": Type.INCOME,
+            "category": self.category.id,
+            "description": "New Operation"
+        }
+        response = self.client.post(self.prefix, data)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Operation.objects.count(), 1)
 
     def test_update_operation(self):
         data = {
