@@ -1,5 +1,6 @@
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, get_current_timezone
+from rest_framework.response import Response
 
 from .filters import OperationFilter
 from .serializers import AccountSerializer, CategorySerializer, OperationSerializer
@@ -53,3 +54,21 @@ class OperationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(date__lte=date_before)
 
         return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        total_amount = 0
+
+        for operation in queryset:
+            if operation.type == Type.EXPENSE:
+                total_amount -= operation.amount
+            elif operation.type == Type.INCOME:
+                total_amount += operation.amount
+            else:
+                pass
+
+        return Response({
+            'total_amount': total_amount,
+            'operations': serializer.data
+        })
