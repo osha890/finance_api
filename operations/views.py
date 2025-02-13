@@ -1,15 +1,14 @@
 from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, get_current_timezone
-from pyexpat.errors import messages
+from django_filters import rest_framework as filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import viewsets
 
 from . import messages
 from .filters import OperationFilter
 from .serializers import AccountSerializer, CategorySerializer, OperationSerializer
-from rest_framework import viewsets
 from .models import Account, Category, Operation, Type
-from django_filters import rest_framework as filters
 
 
 # Create your views here.
