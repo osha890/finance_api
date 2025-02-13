@@ -1,10 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.contrib.auth import get_user_model
 
 from . import messages
 
-
 # Create your models here.
+
+User = get_user_model()
 
 
 class Type(models.TextChoices):
@@ -15,6 +17,7 @@ class Type(models.TextChoices):
 class Account(models.Model):
     name = models.CharField(max_length=50, unique=True)
     balance = models.DecimalField(max_digits=10, decimal_places=2)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -24,6 +27,7 @@ class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)
     type = models.CharField(max_length=7, choices=Type.choices)
     is_default = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.name}: {self.type}"
@@ -36,6 +40,7 @@ class Operation(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     description = models.CharField(max_length=200, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f"{self.type}: {self.amount} (date: {self.date})"

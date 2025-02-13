@@ -7,20 +7,20 @@ from . import messages
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = '__all__'
+        fields = ['id', 'name', 'balance']
 
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = '__all__'
+        fields = ['id', 'name', 'type']
         read_only_fields = ['is_default']
 
 
 class OperationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Operation
-        fields = '__all__'
+        fields = ['id', 'type', 'amount', 'account', 'category', 'description', 'date']
 
     def validate(self, data):
         category = data['category']

@@ -2,6 +2,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, get_current_timezone
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets
 
@@ -16,18 +17,29 @@ from .models import Account, Category, Operation, Type
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Account.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Category.objects.all()
+        queryset = Category.objects.filter(user=self.request.user)
         type_param = self.request.query_params.get('type')
         if type_param in dict(Type.choices):
             queryset = queryset.filter(type=type_param)
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 def set_tz(date):
@@ -49,11 +61,22 @@ def get_total_amount(queryset):
     return total_amount
 
 
+def create_response_with_total_amount(queryset, serializer):
+    if queryset:
+        total_amount = get_total_amount(queryset)
+        return Response({
+            'total_amount': total_amount,
+            'operations': serializer.data
+        })
+    return Response([])
+
+
 class OperationViewSet(viewsets.ModelViewSet):
     queryset = Operation.objects.all()
     serializer_class = OperationSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = OperationFilter
+    permission_classes = [IsAuthenticated]
 
     @action(detail=False, methods=['get'])
     def recent(self, request):
@@ -71,16 +94,13 @@ class OperationViewSet(viewsets.ModelViewSet):
             return Response({"error": messages.NOT_A_VALID_NUMBER}, status=400)
 
         queryset = queryset.order_by('-date')[:count]
-        total_amount = get_total_amount(queryset)
         serializer = self.get_serializer(queryset, many=True)
 
-        return Response({
-            'total_amount': total_amount,
-            'operations': serializer.data
-        })
+        response = create_response_with_total_amount(queryset, serializer)
+        return response
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = Operation.objects.filter(user=self.request.user)
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
 
@@ -97,9 +117,9 @@ class OperationViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset()).order_by('-date')
         serializer = self.get_serializer(queryset, many=True)
-        total_amount = get_total_amount(queryset)
 
-        return Response({
-            'total_amount': total_amount,
-            'operations': serializer.data
-        })
+        response = create_response_with_total_amount(queryset, serializer)
+        return response
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
