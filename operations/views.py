@@ -20,7 +20,10 @@ class AccountViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Account.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.is_staff:
+            return Account.objects.all()
+        return Account.objects.filter(user=user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -32,7 +35,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Category.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.is_staff:
+            queryset = Category.objects.all()
+        else:
+            queryset = Category.objects.filter(user=user)
         type_param = self.request.query_params.get('type')
         if type_param in dict(Type.choices):
             queryset = queryset.filter(type=type_param)
@@ -100,7 +107,11 @@ class OperationViewSet(viewsets.ModelViewSet):
         return response
 
     def get_queryset(self):
-        queryset = Operation.objects.filter(user=self.request.user)
+        user = self.request.user
+        if user.is_staff:
+            queryset = Operation.objects.all()
+        else:
+            queryset = Operation.objects.filter(user=user)
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
 
