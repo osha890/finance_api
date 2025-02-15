@@ -3,9 +3,9 @@ from rest_framework.status import HTTP_400_BAD_REQUEST
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from rest_framework import status
-from rest_framework import generics
 from rest_framework.permissions import IsAdminUser
 from django.contrib.auth import get_user_model
+from rest_framework import viewsets
 
 from .serializers import RegisterSerializer, UserSerializer
 
@@ -23,7 +23,7 @@ class RegisterView(APIView):
         return Response(data=serializer.errors, status=HTTP_400_BAD_REQUEST)
 
 
-class UserListView(generics.ListAPIView):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
