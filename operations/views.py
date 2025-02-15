@@ -2,6 +2,7 @@ from django.utils.dateparse import parse_datetime
 from django.utils.timezone import make_aware, get_current_timezone
 from django_filters import rest_framework as filters
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets
@@ -47,6 +48,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        category = self.get_object()
+        if category.is_default and not request.user.is_staff:
+            raise PermissionDenied(messages.DEFAULT_CATEGORY_DELETE)
+
+        return super().destroy(request, *args, **kwargs)
 
 
 def set_tz(date):

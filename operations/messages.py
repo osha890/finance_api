@@ -3,3 +3,4 @@ NOT_A_VALID_NUMBER = "count должно быть положительным ч�
 
 DEFAULT_CATEGORY_EXPENSE = "Other expenses"
 DEFAULT_CATEGORY_INCOME = "Other incomes"
+DEFAULT_CATEGORY_DELETE = "Вы не можете удалить эту категорию"
