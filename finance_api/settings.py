@@ -12,9 +12,10 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import os
 from pathlib import Path
 from .db_settings import DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
-from dotenv import load_dotenv
+import environ
 
-load_dotenv()
+env = environ.Env()
+environ.Env.read_env(os.path.join(os.path.dirname(__file__), '../.env'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,11 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_8su_lkhyoh+2t)%)gpo(5u0t9v!*gf%vtau338*7h($938jp#'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
-DEBUG = False
+DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
@@ -84,11 +85,11 @@ WSGI_APPLICATION = 'finance_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'django_db'),
-        'USER': os.getenv('POSTGRES_USER', 'django_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'django_password'),
-        'HOST': os.getenv('POSTGRES_HOST', 'django_host'),
-        'PORT': os.getenv('POSTGRES_PORT', 'django_port'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
 
