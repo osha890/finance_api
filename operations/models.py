@@ -39,6 +39,16 @@ class Category(models.Model):
             models.UniqueConstraint(fields=['user', 'name'], name='unique_category_name_per_user')
         ]
 
+    def get_default_category(self):
+        return Category.objects.filter(user=self.user, type=self.type, is_default=True).first()
+
+    def delete(self, *args, **kwargs):
+        default_category = self.get_default_category()
+        if default_category and not self.is_default:
+            with transaction.atomic():
+                Operation.objects.filter(category=self).update(category=default_category)
+                super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"{self.name}: {self.type}"
 

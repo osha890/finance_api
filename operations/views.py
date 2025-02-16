@@ -37,10 +37,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+
         if user.is_staff:
             queryset = Category.objects.all()
         else:
             queryset = Category.objects.filter(user=user)
+
         type_param = self.request.query_params.get('type')
         if type_param in dict(Type.choices):
             queryset = queryset.filter(type=type_param)
@@ -96,6 +98,7 @@ class OperationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def recent(self, request):
         queryset = Operation.objects.all()
+
         type_param = request.query_params.get('type')
         if type_param in dict(Type.choices):
             queryset = queryset.filter(type=type_param)
@@ -120,6 +123,7 @@ class OperationViewSet(viewsets.ModelViewSet):
             queryset = Operation.objects.all()
         else:
             queryset = Operation.objects.filter(user=user)
+            
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
 
