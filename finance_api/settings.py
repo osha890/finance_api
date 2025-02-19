@@ -88,8 +88,8 @@ DATABASES = {
         'NAME': env('DB_NAME'),
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASSWORD'),
-        # 'HOST': env('DB_HOST'),
-        'HOST': 'db',
+        'HOST': env('DB_HOST'),
+        # 'HOST': 'db',
         'PORT': env('DB_PORT'),
     }
 }
@@ -141,3 +141,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 }
+
+TEST_RUNNER = "pytest_django.runner.DiscoverRunner"
