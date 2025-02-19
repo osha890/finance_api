@@ -35,9 +35,38 @@ def category_income(user):
 
 
 @pytest.fixture
-def operation(user, account, category_expense):
+def operation_expense(user, account, category_expense):
     return Operation.objects.create(type=Type.EXPENSE, amount=200, account=account, category=category_expense,
                                     user=user)
+
+
+@pytest.fixture
+def operation_income(user, account, category_income):
+    return Operation.objects.create(type=Type.INCOME, amount=100, account=account, category=category_income,
+                                    user=user)
+
+
+@pytest.fixture
+def few_operations(user, account, category_expense, category_income):
+    data_set = [
+        {"type": Type.EXPENSE, "amount": 150, "account": account, "category": category_expense, "user": user},
+        # Total amount = 200
+        {"type": Type.EXPENSE, "amount": 200, "account": account, "category": category_expense, "user": user},
+        # Total amount = 350
+        {"type": Type.INCOME, "amount": 300, "account": account, "category": category_income, "user": user},
+        # Total amount = 550
+        {"type": Type.INCOME, "amount": 150, "account": account, "category": category_income, "user": user},
+        # Total amount = 250
+        {"type": Type.INCOME, "amount": 100, "account": account, "category": category_income, "user": user},
+        # Total amount = 100
+        {"type": Type.EXPENSE, "amount": 200, "account": account, "category": category_expense, "user": user},
+        # Total amount = 0
+        {"type": Type.INCOME, "amount": 200, "account": account, "category": category_income, "user": user},
+        # Total amount = 200
+    ]
+    for data in data_set:
+        Operation.objects.create(**data)
+    return Operation.objects.all()
 
 
 # ======== Accounts tests ========
@@ -104,18 +133,18 @@ def test_category_delete_default(client, user):
 
 
 @pytest.mark.django_db
-def test_category_with_operations_delete(client, category_expense, operation):
+def test_category_with_operations_delete(client, category_expense, operation_expense):
     url = reverse("category-detail", args=[category_expense.id])
     response = client.delete(url)
     assert response.status_code == 204
-    operation.refresh_from_db()
-    assert operation.category != category_expense
+    operation_expense.refresh_from_db()
+    assert operation_expense.category != category_expense
 
 
 # ======== Operations tests ========
 
 @pytest.mark.django_db
-def test_operation_create(client, account, category_expense):
+def test_operation_expense_create(client, account, category_expense):
     url = reverse("operation-list")
     response = client.post(url, {"type": Type.EXPENSE, "amount": 100, "account": account.id,
                                  "category": category_expense.id})
@@ -124,11 +153,29 @@ def test_operation_create(client, account, category_expense):
 
 
 @pytest.mark.django_db
-def test_operation_list(client):
+def test_operation_income_create(client, account, category_income):
+    url = reverse("operation-list")
+    response = client.post(url, {"type": Type.INCOME, "amount": 300, "account": account.id,
+                                 "category": category_income.id})
+    assert response.status_code == 201
+    assert response.data["amount"] == "300.00"
+
+
+@pytest.mark.django_db
+def test_operation_empty_list(client):
     url = reverse("operation-list")
     response = client.get(url)
     assert response.status_code == 200
     assert len(response.data) == 0
+
+
+@pytest.mark.django_db
+def test_operation_ist(client, operation_expense, operation_income):
+    url = reverse("operation-list")
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.data.get("total_amount") == -100
+    assert len(response.data.get("operations")) == 2
 
 
 @pytest.mark.django_db
@@ -157,3 +204,19 @@ def test_operation_create_wrong_type(client, account, category_income):
     account.refresh_from_db()
     assert response.status_code == 400
     assert len(Operation.objects.all()) == 0
+
+
+@pytest.mark.django_db
+def test_operations_recent_default(client, few_operations):
+    url = reverse("operation-recent")
+    response = client.get(url)
+    assert len(response.data.get("operations")) == 5
+    assert response.data.get("total_amount") == 550
+
+
+@pytest.mark.django_db
+def test_operations_recent(client, few_operations):
+    url = reverse("operation-recent") + "?count=3"
+    response = client.get(url)
+    assert len(response.data.get("operations")) == 3
+    assert response.data.get("total_amount") == 100
