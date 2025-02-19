@@ -1,6 +1,5 @@
-from django.utils.dateparse import parse_datetime
-from django.utils.timezone import make_aware, get_current_timezone
 from django_filters import rest_framework as filters
+
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
@@ -11,9 +10,8 @@ from . import messages
 from .filters import OperationFilter
 from .serializers import AccountSerializer, CategorySerializer, OperationSerializer
 from .models import Account, Category, Operation, Type
+from .utils import get_queryset_for_user, set_tz, create_response_with_total_amount
 
-
-# Create your views here.
 
 class AccountViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all()
@@ -21,10 +19,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            return Account.objects.all()
-        return Account.objects.filter(user=user)
+        return get_queryset_for_user(self.request.user, Account)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -36,12 +31,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if user.is_staff:
-            queryset = Category.objects.all()
-        else:
-            queryset = Category.objects.filter(user=user)
+        queryset = get_queryset_for_user(self.request.user, Category)
 
         type_param = self.request.query_params.get('type')
         if type_param in dict(Type.choices):
@@ -57,35 +47,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
             raise PermissionDenied(messages.DEFAULT_CATEGORY_DELETE)
 
         return super().destroy(request, *args, **kwargs)
-
-
-def set_tz(date):
-    date = parse_datetime(date)
-    if date and date.tzinfo is None:
-        date = make_aware(date, get_current_timezone())
-    return date
-
-
-def get_total_amount(queryset):
-    total_amount = 0
-    for operation in queryset:
-        if operation.type == Type.EXPENSE:
-            total_amount -= operation.amount
-        elif operation.type == Type.INCOME:
-            total_amount += operation.amount
-        else:
-            pass
-    return total_amount
-
-
-def create_response_with_total_amount(queryset, serializer):
-    if queryset:
-        total_amount = get_total_amount(queryset)
-        return Response({
-            'total_amount': total_amount,
-            'operations': serializer.data
-        })
-    return Response([])
 
 
 class OperationViewSet(viewsets.ModelViewSet):
@@ -118,12 +79,8 @@ class OperationViewSet(viewsets.ModelViewSet):
         return response
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            queryset = Operation.objects.all()
-        else:
-            queryset = Operation.objects.filter(user=user)
-            
+        queryset = get_queryset_for_user(self.request.user, Operation)
+
         date_after = self.request.query_params.get('date_after')
         date_before = self.request.query_params.get('date_before')
 
