@@ -25,9 +25,19 @@ class OperationSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
     def validate(self, data):
+        user = self.context['request'].user
+        account = data.get('account')
         category = data.get('category')
         operation_type = data.get('type')
+
+        if account is not None:
+            if account.user != user:
+                raise serializers.ValidationError(messages.WRONG_USER_ACCOUNT)
+        if category is not None:
+            if category.user != user:
+                raise serializers.ValidationError(messages.WRONG_USER_CATEGORY)
         if category is not None and operation_type is not None:
             if category.type != operation_type:
                 raise serializers.ValidationError(messages.WRONG_CATEGORY.format(category=category))
+
         return data
