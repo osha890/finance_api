@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:16-alpine
-    container_name: my_postgres
+    container_name: postgres
     restart: always
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -16,7 +16,7 @@ services:
 
   backend:
     build: .
-    container_name: finance_api
+    container_name: finance_backend
     restart: always
     depends_on:
       - db
