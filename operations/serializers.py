@@ -25,7 +25,9 @@ class OperationSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
     def validate(self, data):
-        category = data['category']
-        if category.type != data['type']:
-            raise serializers.ValidationError(messages.WRONG_CATEGORY.format(category=category))
+        category = data.get('category')
+        operation_type = data.get('type')
+        if category is not None and operation_type is not None:
+            if category.type != operation_type:
+                raise serializers.ValidationError(messages.WRONG_CATEGORY.format(category=category))
         return data
