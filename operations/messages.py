@@ -7,3 +7,6 @@ DEFAULT_CATEGORY_DELETE = "Вы не можете удалить эту кате
 WRONG_USER_ACCOUNT = "Вы не можете использовать этот счет"
 WRONG_USER_CATEGORY = "Вы не можете использовать эту категорию"
 WRONG_CATEGORY = "Категория '{category}' предназначена для другого типа операций"
+
+ACCOUNT_ALREADY_EXISTS = "Счет с таким именем уже существует"
+CATEGORY_ALREADY_EXISTS = "Категория с таким именем уже существует"

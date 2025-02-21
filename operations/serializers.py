@@ -10,12 +10,20 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'balance', 'user']
         read_only_fields = ['user']
 
+    def validate(self, data):
+        validate_existence(self.context['request'].user, data, Account)
+        return data
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'type', 'user']
         read_only_fields = ['is_default', 'user']
+
+    def validate(self, data):
+        validate_existence(self.context['request'].user, data, Category)
+        return data
 
 
 class OperationSerializer(serializers.ModelSerializer):
@@ -41,3 +49,16 @@ class OperationSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(messages.WRONG_CATEGORY.format(category=category))
 
         return data
+
+
+def validate_existence(user, data, model):
+    name = data.get('name')
+    if name is not None:
+        if model == Account:
+            error_message = messages.ACCOUNT_ALREADY_EXISTS
+        elif model == Category:
+            error_message = messages.CATEGORY_ALREADY_EXISTS
+        else:
+            error_message = "error"
+        if model.objects.filter(user=user, name=name).exists():
+            raise serializers.ValidationError({"name": error_message})
