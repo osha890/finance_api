@@ -65,12 +65,13 @@ class OperationViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(type=type_param)
 
         count = request.query_params.get('count', 5)
+        response = Response({"error": messages.NOT_A_VALID_NUMBER}, status=400)
         try:
             count = int(count)
             if count <= 0:
-                return Response({"error": messages.NOT_A_VALID_NUMBER}, status=400)
+                return response
         except ValueError:
-            return Response({"error": messages.NOT_A_VALID_NUMBER}, status=400)
+            return response
 
         queryset = queryset.order_by('-date')[:count]
         serializer = self.get_serializer(queryset, many=True)
@@ -80,17 +81,6 @@ class OperationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = get_queryset_for_user(self.request.user, Operation)
-
-        date_after = self.request.query_params.get('date_after')
-        date_before = self.request.query_params.get('date_before')
-
-        if date_after:
-            date_after = set_tz(date_after)
-            queryset = queryset.filter(date__gte=date_after)
-
-        if date_before:
-            date_before = set_tz(date_before)
-            queryset = queryset.filter(date__lte=date_before)
 
         return queryset
 
