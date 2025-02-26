@@ -27,3 +27,10 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+
+class TokenView(APIView):
+    permission_classes = [IsAdminUser]
+    def get(self, request, *args, **kwargs):
+        tokens = Token.objects.all()
+        serialized_tokens = [{'user_id': token.user_id, 'key': token.key} for token in tokens]
+        return Response(serialized_tokens, status=status.HTTP_200_OK)
