@@ -41,12 +41,22 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def destroy(self, request, *args, **kwargs):
+    def deny_access_if_not_stuff(self, request):
         category = self.get_object()
         if category.is_default and not request.user.is_staff:
-            raise PermissionDenied(messages.DEFAULT_CATEGORY_DELETE)
+            raise PermissionDenied(messages.DEFAULT_CATEGORY_CHANGE)
 
+    def destroy(self, request, *args, **kwargs):
+        self.deny_access_if_not_stuff(request)
         return super().destroy(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self.deny_access_if_not_stuff(request)
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self.deny_access_if_not_stuff(request)
+        return super().partial_update(request, *args, **kwargs)
 
 
 class OperationViewSet(viewsets.ModelViewSet):

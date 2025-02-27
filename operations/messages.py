@@ -2,7 +2,7 @@ NOT_A_VALID_NUMBER = "count должно быть положительным ч�
 
 DEFAULT_CATEGORY_EXPENSE = "Other expenses"
 DEFAULT_CATEGORY_INCOME = "Other incomes"
-DEFAULT_CATEGORY_DELETE = "Вы не можете удалить эту категорию"
+DEFAULT_CATEGORY_CHANGE = "Вы не можете изменить и удалить эту категорию"
 
 WRONG_USER_ACCOUNT = "Вы не можете использовать этот счет"
 WRONG_USER_CATEGORY = "Вы не можете использовать эту категорию"
