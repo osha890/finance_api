@@ -36,7 +36,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         type_param = self.request.query_params.get('type')
         if type_param in dict(Type.choices):
             queryset = queryset.filter(type=type_param)
-        return queryset
+        return queryset.order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
