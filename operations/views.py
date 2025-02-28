@@ -19,7 +19,7 @@ class AccountViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return get_queryset_for_user(self.request.user, Account)
+        return get_queryset_for_user(self.request.user, Account).order_by('id')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

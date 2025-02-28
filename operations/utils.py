@@ -33,10 +33,10 @@ def get_total_amount(queryset):
 
 
 def create_response_with_total_amount(queryset, serializer):
-    if queryset:
-        total_amount = get_total_amount(queryset)
-        return Response({
-            'total_amount': total_amount,
-            'operations': serializer.data
-        })
-    return Response([])
+    # if queryset:
+    total_amount = get_total_amount(queryset)
+    return Response({
+        'total_amount': total_amount,
+        'operations': serializer.data
+    })
+    # return Response([])
