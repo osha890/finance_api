@@ -83,7 +83,7 @@ class OperationViewSet(viewsets.ModelViewSet):
         except ValueError:
             return response
 
-        queryset = queryset.order_by('-date')[:count]
+        queryset = queryset.order_by('date')[:count]
         serializer = self.get_serializer(queryset, many=True)
 
         response = create_response_with_total_amount(queryset, serializer)
@@ -95,7 +95,7 @@ class OperationViewSet(viewsets.ModelViewSet):
         return queryset
 
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset()).order_by('-date')
+        queryset = self.filter_queryset(self.get_queryset()).order_by('date')
         serializer = self.get_serializer(queryset, many=True)
 
         response = create_response_with_total_amount(queryset, serializer)
