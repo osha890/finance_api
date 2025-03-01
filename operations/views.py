@@ -1,10 +1,11 @@
+from django.db.models import ProtectedError
 from django_filters import rest_framework as filters
 
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 
 from . import messages
 from .filters import OperationFilter
@@ -24,6 +25,17 @@ class AccountViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        try:
+            self.perform_destroy(instance)
+        except ProtectedError:
+            return Response(
+                {"error": messages.ACCOUNT_PROTECTED_ERROR},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -41,21 +53,21 @@ class CategoryViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    def deny_access_if_not_stuff(self, request):
+    def deny_access_if_default_and_not_stuff(self, request):
         category = self.get_object()
         if category.is_default and not request.user.is_staff:
             raise PermissionDenied(messages.DEFAULT_CATEGORY_CHANGE)
 
     def destroy(self, request, *args, **kwargs):
-        self.deny_access_if_not_stuff(request)
+        self.deny_access_if_default_and_not_stuff(request)
         return super().destroy(request, *args, **kwargs)
 
     def update(self, request, *args, **kwargs):
-        self.deny_access_if_not_stuff(request)
+        self.deny_access_if_default_and_not_stuff(request)
         return super().update(request, *args, **kwargs)
 
     def partial_update(self, request, *args, **kwargs):
-        self.deny_access_if_not_stuff(request)
+        self.deny_access_if_default_and_not_stuff(request)
         return super().partial_update(request, *args, **kwargs)
 
 
