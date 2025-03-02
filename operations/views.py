@@ -95,7 +95,7 @@ class OperationViewSet(viewsets.ModelViewSet):
         except ValueError:
             return response
 
-        queryset = queryset.order_by('date')[:count]
+        queryset = queryset.order_by('date').reverse()[:count]
         serializer = self.get_serializer(queryset, many=True)
 
         response = create_response_with_total_amount(queryset, serializer)
