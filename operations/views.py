@@ -80,7 +80,7 @@ class OperationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def recent(self, request):
-        queryset = Operation.objects.all()
+        queryset = get_queryset_for_user(self.request.user, Operation)
 
         type_param = request.query_params.get('type')
         if type_param in dict(Type.choices):
