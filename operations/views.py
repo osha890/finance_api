@@ -1,4 +1,4 @@
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Subquery
 from django_filters import rest_framework as filters
 
 from rest_framework.decorators import action
@@ -95,7 +95,9 @@ class OperationViewSet(viewsets.ModelViewSet):
         except ValueError:
             return response
 
-        queryset = queryset.order_by('date').reverse()[:count]
+        latest_records = queryset.order_by('-date')[:count]
+        queryset = queryset.filter(id__in=Subquery(latest_records.values('id'))).order_by('date')
+
         serializer = self.get_serializer(queryset, many=True)
 
         response = create_response_with_total_amount(queryset, serializer)
