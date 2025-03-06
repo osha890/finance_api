@@ -1,22 +1,18 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16-alpine
-    container_name: postgres
+    container_name: finance_db
     restart: always
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5433:5432"
 
-  backend:
-    build: .
-    container_name: finance_backend
+  api:
+    image: finance_api:latest
+    container_name: finance_api
     restart: always
     depends_on:
       - db
