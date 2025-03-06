@@ -8,7 +8,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5433:5432"
+      - "5435:5432"
 
   api:
     image: finance_api:latest
@@ -23,7 +23,7 @@ services:
     ports:
       - "8000:8000"
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "ls -l && python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
 
 volumes:
