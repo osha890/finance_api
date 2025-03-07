@@ -11,7 +11,7 @@ services:
       - "5435:5432"
 
   api:
-    image: finance_api:latest
+    image: osha890/finance_api:latest
     container_name: finance_api
     restart: always
     depends_on:
