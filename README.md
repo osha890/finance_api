@@ -94,9 +94,9 @@ pip install -r requirements.txt
 ```
 
 ### Настройка
-Создайте файл `.env` и укажите в нем параметры, указанные в примере. Пример:
+Создайте базу данных postgres. Затем создайте файл `.env` в рабочей директории и укажите в нем параметры, указанные в примере. Пример:
 ```
-POSTGRES_DB=finance_api
+POSTGRES_DB=finance_api  # имя базы данных, которую вы создали
 POSTGRES_USER=osha
 POSTGRES_PASSWORD=qwerty123
 POSTGRES_HOST=localhost
@@ -105,10 +105,32 @@ POSTGRES_PORT=5432
 SECRET_KEY='django-insecure-_8su_lkhyoh+2t)%)gpo(5u0t9v!*gf%vtau338*7h($938jp#'
 DEBUG=True
 ```
+В файле finance_api/settings.py найдите словарь `DATABASES`. Раскомментируйте строчку `# 'HOST': env('POSTGRES_HOST'),` и закомментируйте или удалите строчку `'HOST': 'db',`. Измененный словарь должен выглядеть так:
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
+        # 'HOST': env('POSTGRES_HOST'),
+        'HOST': 'db',
+        'PORT': env('POSTGRES_PORT'),
+    }
+}
+```
 
 Примените миграции:
 ```sh
 python manage.py migrate
+```
+Создание суперпользователя:
+```sh
+python manage.py createsuperuser
+```
+Создание токена для суперпользователя:
+```sh
+python manage.py drf_create_token my_superuser_name
 ```
 
 ### Запуск сервера
