@@ -58,6 +58,22 @@ DEBUG=True
 
 API будет доступно по адресу http://localhost:8000/.
 
+### Создание суперпользователя (админа)
+Просмотрите запущенные контейнеры:
+```sh
+docker ps
+```
+
+Запустите команду внутри контейнера c образом `finance_api` для создания суперпользователя:
+```sh
+docker exec -it <container_id> python manage.py createsuperuser
+```
+Запустите команду для создания токена для суперпользователя:
+```sh
+docker exec -it <container_id> python manage.py drf_create_token <superuser_name>
+```
+Сохраните токен для аутентификации.
+
 ---
 
 ## Установка и запуск без Docker-compose
@@ -139,8 +155,9 @@ python manage.py createsuperuser
 ```
 Создание токена для суперпользователя:
 ```sh
-python manage.py drf_create_token my_superuser_name
+python manage.py drf_create_token <superuser_name>
 ```
+Сохраните токен для аутнетификации.
 
 ### Запуск сервера
 ```sh
@@ -157,7 +174,7 @@ API будет доступно по адресу http://localhost:8000/.
 ### Регистрация
 - `POST /api/register/` — зарегистрировать нового пользователя (возвращает `token`)
 
-Далее все запросы будут требовать авторизацию. Используйте заголовок Authorization: Token {token}. Например:
+Все остальные запросы требуют авторизацию. Используйте заголовок Authorization: Token {token}. Например:
 `Authorization: Token 5f9b05079002f66108fea596a7b6429c3168fde5`
 
 ### Счета (`/api/accounts/`)
@@ -169,7 +186,7 @@ API будет доступно по адресу http://localhost:8000/.
 - `DELETE /api/accounts/{id}/` — удалить счет  
 
 ### Категории (`/api/categories/`)
-- `GET /api/categories/` — получить список своих категорий, параметры:  
+- `GET /api/categories/` — получить список своих категорий; параметры для фильтрации:  
   - `?type=<income|expense>` — фильтр по типу категории  
 - `POST /api/categories/` — создать новую категорию  
 - `GET /api/categories/{id}/` — получить информацию о категории  
@@ -178,7 +195,7 @@ API будет доступно по адресу http://localhost:8000/.
 - `DELETE /api/categories/{id}/` — удалить категорию (нельзя удалить системные категории, если не админ)  
 
 ### Операции (`/api/operations/`)
-- `GET /api/operations/` — получить список своих операций, параметры:
+- `GET /api/operations/` — получить список своих операций; параметры для фильтрации:  
   - `?type=<income|expense>` — фильтр по типу операции  
   - `?account=<id>` — фильтр по счету  
   - `?category=<id>` — фильтр по категории  
@@ -190,8 +207,8 @@ API будет доступно по адресу http://localhost:8000/.
 - `PUT /api/operations/{id}/` — обновить информацию об операции  
 - `PATCH /api/operations/{id}/` — частично обновить операцию  
 - `DELETE /api/operations/{id}/` — удалить операцию  
-- `GET /api/operations/recent/` — получить последние операции  
-  - `?type=<income|expense>` — фильтр по типу операции, параметры:
+- `GET /api/operations/recent/` — получить последние операции; параметры для фильтрации:  
+  - `?type=<income|expense>` — фильтр по типу операции
   - `?count=<число>` — количество операций (по умолчанию 5)  
 
 ### Пользователи (только для админов) (`/api/users/`)
