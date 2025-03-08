@@ -31,7 +31,7 @@
 
 ---
 
-## Установка и запуск с Docker-compose
+## Установка и запуск с Docker
 
 ### Клонирование репозитория
 ```sh
@@ -76,7 +76,7 @@ docker exec -it <container_id> python manage.py drf_create_token <superuser_name
 
 ---
 
-## Установка и запуск без Docker-compose
+## Установка и запуск без Docker
 
 ### Клонирование репозитория
 ```sh
@@ -149,7 +149,7 @@ DATABASES = {
 ```sh
 python manage.py migrate
 ```
-Создание суперпользователя:
+Создание суперпользователя (админа):
 ```sh
 python manage.py createsuperuser
 ```
