@@ -32,7 +32,15 @@
 ---
 
 ## Установка и запуск с Docker-compose
-Создайте файл `.env` и укажите в нем параметры, указанные в примере. Пример:
+
+### Клонирование репозитория
+```sh
+git clone https://github.com/osha890/finance_api.git
+cd finance_api
+```
+
+### Настройка
+Создайте файл `.env` в рабочей директории и укажите в нем параметры, указанные в примере. Пример:
 ```
 POSTGRES_DB=finance_api
 POSTGRES_USER=osha
@@ -44,6 +52,7 @@ SECRET_KEY='django-insecure-_8su_lkhyoh+2t)%)gpo(5u0t9v!*gf%vtau338*7h($938jp#'
 DEBUG=True
 ```
 
+### Запуск
 Запустите контейнеры:
 ```docker compose up```
 
