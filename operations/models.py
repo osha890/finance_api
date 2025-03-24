@@ -10,6 +10,7 @@ User = get_user_model()
 
 
 class Type(models.TextChoices):
+    """Определение типов транзакций (расход и доход)"""
     EXPENSE = 'expense', 'Expense'
     INCOME = 'income', 'Income'
 
@@ -20,6 +21,7 @@ class Account(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
+        """Ограничение, чтобы у пользователя е повторялись счета"""
         constraints = [
             models.UniqueConstraint(fields=['user', 'name'], name='unique_account_name_per_user')
         ]
@@ -35,17 +37,21 @@ class Category(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     class Meta:
+        """Ограничение, чтобы у пользователя е повторялись категории"""
         constraints = [
             models.UniqueConstraint(fields=['user', 'name'], name='unique_category_name_per_user')
         ]
 
     def get_default_category(self):
+        """Получаем дефолтную категорию по типу"""
         return Category.objects.filter(user=self.user, type=self.type, is_default=True).first()
 
     def delete(self, *args, **kwargs):
+        """Переопределение метода удаления, чтобы при удалении категории переназначить операции"""
         default_category = self.get_default_category()
         if default_category and not self.is_default:
             with transaction.atomic():
+                # Переназначаем все операции с этой категорией на категорию по умолчанию
                 Operation.objects.filter(category=self).update(category=default_category)
                 super().delete(*args, **kwargs)
 
@@ -66,29 +72,31 @@ class Operation(models.Model):
         return f"{self.type}: {self.amount} (date: {self.date})"
 
     def clean(self):
+        """Проверка, что тип категории соответствует типу операции (расход или доход)"""
         if self.category.type != self.type:
             raise ValidationError(messages.WRONG_CATEGORY.format(category=self.category))
 
     def update_balance(self):
-        old_operation = Operation.objects.get(pk=self.pk)
-        old_amount = old_operation.amount
+        """Возвращаем баланс до операции"""
+        operation = Operation.objects.get(pk=self.pk)
+        amount = operation.amount
 
-        if old_operation.type == Type.INCOME:
-            old_amount *= -1
+        if operation.type == Type.INCOME:
+            amount *= -1
 
-        old_operation.account.balance += old_amount
-        old_operation.account.save()
+        operation.account.balance += amount
+        operation.account.save()
 
     def save(self, *args, **kwargs):
-        self.clean()
-        is_new = self.pk is None
+        self.clean()    # Выполняем проверку на корректность категории
+        is_new = self.pk is None    # Проверка, новая ли операция или редактируется существующая
 
-        if not is_new:
+        if not is_new:  # Обновляем баланс, если операция не новая
             self.update_balance()
 
         with transaction.atomic():
-            super().save(*args, **kwargs)
-            self.account.refresh_from_db()
+            super().save(*args, **kwargs)   # Сохраняем операцию в базе данных
+            self.account.refresh_from_db()  # Обновляем информацию о счете из базы данных
             amount = self.amount
 
             if self.type == Type.EXPENSE:
@@ -98,5 +106,6 @@ class Operation(models.Model):
             self.account.save()
 
     def delete(self, *args, **kwargs):
+        """Переопределение метода удаления операции, чтобы обновить баланс счета при удалении"""
         self.update_balance()
         super().delete(*args, **kwargs)
