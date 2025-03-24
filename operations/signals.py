@@ -10,11 +10,12 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def create_default_categories(sender, instance, created, **kwargs):
     if created:
+        # Создание дефолтной категории для трат
         Category.objects.create(name=messages.DEFAULT_CATEGORY_EXPENSE,
                                 type=Type.EXPENSE,
                                 is_default=True,
                                 user=instance)
-
+        # Создание дефолтной категории для доходов
         Category.objects.create(name=messages.DEFAULT_CATEGORY_INCOME,
                                 type=Type.INCOME,
                                 is_default=True,
