@@ -11,7 +11,7 @@ from . import messages
 from .filters import OperationFilter
 from .serializers import AccountSerializer, CategorySerializer, OperationSerializer
 from .models import Account, Category, Operation, Type
-from .utils import get_queryset_for_user, set_tz, create_response_with_total_amount
+from .utils import get_queryset_for_user, create_response_with_total_amount
 
 
 class AccountViewSet(viewsets.ModelViewSet):
