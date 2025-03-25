@@ -1,4 +1,6 @@
 finance_api/db_settings.py
 .env
-__pycache__/
+finance_api/__pycache__/
+operations/__pycache__/
+users/__pycache__/
 *.py[cod]
